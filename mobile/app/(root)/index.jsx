@@ -4,6 +4,7 @@ import { Alert, FlatList, Image, RefreshControl, Text, Touchable, TouchableOpaci
 import { SignOutButton } from "../../components/SignOutButton"
 import { useTransaction } from '../../hooks/useHooks'
 import { useEffect, useState } from 'react'
+import { useFocusEffect } from "expo-router"
 import PageLoader from '../../components/PageLoader'
 import { styles } from '../../assets/styles/home.styles'
 import { Ionicons } from "@expo/vector-icons"
@@ -16,12 +17,14 @@ export default function Page() {
   const [refreshing, setrefreshing] = useState(false)
   const { user } = useUser()
   const { isLoading, summary, transactions, deleteTransaction, loadData } = useTransaction(user.id)
-  useEffect(() => {
+  useFocusEffect(
+  useCallback(() => {
     const runLoadeData = async () => {
       await loadData()
     }
     runLoadeData()
   }, [loadData])
+)
 
  const  refreshTransaction =async()=>{
   setrefreshing(true)

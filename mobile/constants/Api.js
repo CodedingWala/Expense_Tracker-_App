@@ -1,1 +1,1 @@
-export const url = `http://localhost:5001/api/transaction`
+export const url = `https://expense-tracker-app-server-qu4y.onrender.com/api/transaction`

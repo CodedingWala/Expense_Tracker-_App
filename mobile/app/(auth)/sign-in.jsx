@@ -16,6 +16,10 @@ export default function Page() {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  // Second factor (2FA) state
+  const [needsSecondFactor, setNeedsSecondFactor] = useState(false);
+  const [secondFactorCode, setSecondFactorCode] = useState("");
+
   // Handle the submission of the sign-in form
   const onSignInPress = async () => {
     if (!isLoaded) return;
@@ -32,6 +36,14 @@ export default function Page() {
       if (signInAttempt.status === "complete") {
         await setActive({ session: signInAttempt.createdSessionId });
         router.replace("/");
+      } else if (signInAttempt.status === "needs_second_factor") {
+        // Account has 2FA enabled - prepare and show the code entry screen
+        try {
+          await signIn.prepareSecondFactor({ strategy: "email_code" });
+        } catch (prepErr) {
+          console.log("error preparing second factor: ", prepErr.errors);
+        }
+        setNeedsSecondFactor(true);
       } else {
         // If the status isn't complete, check why. User might need to
         // complete further steps.
@@ -47,6 +59,60 @@ export default function Page() {
       }
     }
   };
+
+  // Handle submission of the second factor (2FA) code
+  const onVerifySecondFactorPress = async () => {
+    if (!isLoaded) return;
+
+    try {
+      const signInAttempt = await signIn.attemptSecondFactor({
+        strategy: "email_code",
+        code: secondFactorCode,
+      });
+
+      if (signInAttempt.status === "complete") {
+        await setActive({ session: signInAttempt.createdSessionId });
+        router.replace("/");
+      } else {
+        console.error(JSON.stringify(signInAttempt, null, 2));
+        setError("Verification incomplete. Please try again.");
+      }
+    } catch (err) {
+      setError(err.errors?.[0]?.message);
+      console.log(err.errors);
+    }
+  };
+
+  if (needsSecondFactor) {
+    return (
+      <View style={styles.verificationContainer}>
+        <Text style={styles.verificationTitle}>Two-step verification</Text>
+
+        {error ? (
+          <View style={styles.errorBox}>
+            <Ionicons name="alert-circle" size={20} color={COLORS.expense} />
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity onPress={() => setError("")}>
+              <Ionicons name="close" size={20} color={COLORS.textLight} />
+            </TouchableOpacity>
+          </View>
+        ) : null}
+
+        <TextInput
+          style={[styles.verificationInput, error && styles.errorInput]}
+          value={secondFactorCode}
+          placeholder="Enter the code sent to your email"
+          placeholderTextColor="#9A8478"
+          keyboardType="numeric"
+          onChangeText={(code) => setSecondFactorCode(code)}
+        />
+
+        <TouchableOpacity onPress={onVerifySecondFactorPress} style={styles.button}>
+          <Text style={styles.buttonText}>Verify</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAwareScrollView

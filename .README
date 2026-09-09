@@ -1,0 +1,97 @@
+Expense Tracker App
+
+A full-stack mobile expense tracker that lets users sign up, sign in, and log their income and expenses in real time. The app automatically calculates the user's current balance, total income, and total expenses based on their transaction history.
+
+Live Backend
+
+The backend API is deployed on Render:
+https://expense-tracker-app-server-qu4y.onrender.com
+
+Features
+Secure authentication with email/password sign-up and sign-in, including email verification and two-factor authentication (powered by Clerk)
+Add new transactions as either income or expense, with category tagging
+Automatic real-time calculation of balance, total income, and total expenses
+View and delete recent transactions
+Persistent cloud storage using PostgreSQL
+Rate-limited backend API to prevent abuse
+Tech Stack
+
+Frontend (Mobile App)
+
+React Native
+Expo / Expo Router
+Clerk (authentication)
+
+Backend (Server)
+
+Node.js
+Express
+PostgreSQL via Neon (serverless)
+Upstash Redis (rate limiting)
+Project Structure
+Expense_Tracker_App/
+├── mobile/     # React Native / Expo frontend
+└── backend/    # Node.js / Express backend
+Prerequisites
+
+Before setting up locally, make sure you have installed:
+
+Node.js (v20 or later recommended)
+npm (comes with Node.js)
+Expo Go app on your phone (for quick testing) or Android Studio / Xcode (for emulators)
+A Clerk account (for authentication keys)
+A Neon account (for the PostgreSQL database)
+An Upstash account (for Redis rate limiting)
+Backend Setup
+Navigate to the backend folder:
+   cd backend
+Install dependencies:
+   npm install
+Create a .env file in the backend folder with the following variables:
+   PORT=5001
+   DATABASE_URL=your_neon_postgresql_connection_string
+   UPSTASH_REDIS_REST_URL=your_upstash_redis_url
+   UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_token
+   API_URL=http://localhost:5001
+Start the server:
+   npm run dev
+
+The server will run on http://localhost:5001 by default.
+
+Mobile App Setup
+Navigate to the mobile folder:
+   cd mobile
+Install dependencies:
+   npm install
+Create a .env file in the mobile folder with the following variables:
+   EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+   EXPO_PUBLIC_API_URL=http://localhost:5001
+
+Get your Clerk publishable key from the Clerk Dashboard under API Keys.
+
+Start the Expo development server:
+   npx expo start
+Scan the QR code with the Expo Go app on your phone, or press a to open on an Android emulator.
+Building a Standalone APK
+
+This project uses EAS Build to create installable APK files that run without a development server.
+
+Install the EAS CLI:
+   npm install -g eas-cli
+Log in to your Expo account:
+   eas login
+Make sure your eas.json includes your environment variables under the relevant build profile (since .env files are not uploaded to EAS build servers):
+jsonc
+   "preview": {
+     "distribution": "internal",
+     "env": {
+       "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "your_clerk_publishable_key",
+       "EXPO_PUBLIC_API_URL": "https://expense-tracker-app-server-qu4y.onrender.com"
+     }
+   }
+Run the build:
+   eas build --profile preview --platform android
+Once the build finishes, download and install the .apk file on your Android device.
+Notes
+For a standalone (non-development) build, EXPO_PUBLIC_API_URL should point to the deployed backend (Render URL above), not localhost, since the app will no longer have access to your local machine.
+Development builds require a running Metro server (npx expo start --dev-client) and a device connection (WiFi or USB via adb reverse).

@@ -69,7 +69,7 @@ export const useTransaction = (userId) => {
             }
             const data =await response.json()
             await loadData()
-            Alert.alert("success", `user with id: ${id} deleted successfully`)
+            Alert.alert("success", `transaction deleted successfully`)
         } catch (error) {
             console.log("some error: ", error.message)
             Alert.alert("Error: ", "error in deleteTransction")
